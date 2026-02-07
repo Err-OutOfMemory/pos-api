@@ -1,7 +1,7 @@
 package models
 
 type OrderType struct {
-	ID     int    `gorm:"primaryKey;autoIncrement:false" json:"id"`
+	ID     int    `gorm:"primaryKey" json:"id"`
 	Type   string `gorm:"size:255;not null" json:"type"`
 	Status string `gorm:"size:20;default:'active'" json:"status"`
 }

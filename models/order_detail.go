@@ -1,7 +1,7 @@
 package models
 
 type OrderDetail struct {
-	ID             int     `gorm:"primaryKey;autoIncrement:false" json:"id"`
+	ID             int     `gorm:"primaryKey" json:"id"`
 	OrderID        int     `gorm:"not null" json:"order_id"`
 	ProductID      int     `gorm:"not null" json:"product_id"`
 	DiscountAmount float64 `gorm:"column:discount_amount" json:"discount_amount"`
