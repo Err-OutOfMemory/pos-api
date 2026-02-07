@@ -32,6 +32,10 @@ func SetupRoutes(r *gin.Engine) {
 			categories := api.Group("/categories")
 			{
 				categories.GET("", controllers.GetCategories)
+				categories.GET("/:id", controllers.GetCategoryByID)
+				categories.POST("", controllers.CreateCategory)
+				categories.PUT("/:id", controllers.UpdateCategory)
+				categories.DELETE("/:id", controllers.DeleteCategory)
 			}
 
 		}
