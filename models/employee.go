@@ -14,7 +14,7 @@ type Employee struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	User User `gorm:"foreignKey:EmployeeID" json:"user"`
+	User User `gorm:"foreignKey:EmployeeID" json:"user,omitzero"`
 }
 
 func (Employee) TableName() string {

@@ -46,7 +46,7 @@ func GetOrderByID(c *gin.Context) {
 
 	if err := config.Db.
 		Preload("OrderType").
-		Preload("User").
+		Preload("Employee").
 		Preload("OrderDetails.Product").
 		First(&order, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "ไม่พบข้อมูลออเดอร์"})

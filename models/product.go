@@ -10,7 +10,7 @@ type Product struct {
 	ImgPath     string  `gorm:"column:img_path;size:255" json:"img_path"`
 	Status      string  `gorm:"size:20;default:'active'" json:"status"`
 
-	Category Category `gorm:"foreignKey:CategoryID" json:"category"`
+	Category    Category `gorm:"foreignKey:CategoryID" json:"category,omitzero"`
 }
 
 func (Product) TableName() string {

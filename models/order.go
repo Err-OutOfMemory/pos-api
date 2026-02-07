@@ -11,9 +11,12 @@ type Order struct {
 	OrderTypeID int       `gorm:"column:order_type_id;not null" json:"order_type_id"`
 	Status      string    `gorm:"size:20;default:'pending'" json:"status"`
 
-	User         User          `gorm:"foreignKey:EmpID"`
-	OrderType    OrderType     `gorm:"foreignKey:OrderTypeID"`
-	OrderDetails []OrderDetail `gorm:"foreignKey:OrderID" json:"order_details"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	Employee     Employee      `gorm:"foreignKey:EmpID" json:"employee,omitzero"`
+	OrderType    OrderType     `gorm:"foreignKey:OrderTypeID" json:"order_type,omitzero"`
+	OrderDetails []OrderDetail `gorm:"foreignKey:OrderID" json:"order_details,omitzero"`
 }
 
 func (Order) TableName() string {

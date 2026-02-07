@@ -9,7 +9,7 @@ type OrderDetail struct {
 	DiscountAmount float64 `gorm:"column:discount_amount" json:"discount_amount"`
 	Description    string  `gorm:"size:255" json:"description"`
 
-	Order   Order   `gorm:"foreignKey:OrderID"`
+	Order   Order   `gorm:"foreignKey:OrderID" json:"-"`
 	Product Product `gorm:"foreignKey:ProductID"`
 }
 
