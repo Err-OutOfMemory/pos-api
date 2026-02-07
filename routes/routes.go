@@ -55,6 +55,16 @@ func SetupRoutes(r *gin.Engine) {
 				orderTypes.PUT("/:id", controllers.UpdateOrderType)
 				orderTypes.DELETE("/:id", controllers.DeleteOrderType)
 			}
+
+			order := protected.Group("/orders")
+			{
+				order.GET("", controllers.GetOrders)
+				order.GET("/:id", controllers.GetOrderByID)
+				order.POST("", controllers.CreateOrder)
+				order.PUT("/:id", controllers.UpdateOrder)
+				order.PUT("/:id/status", controllers.UpdateOrderStatus)
+				order.DELETE("/:id", controllers.DeleteOrder)
+			}
 		}
 	}
 }
