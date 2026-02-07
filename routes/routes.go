@@ -3,23 +3,37 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 	"pos-service/controllers"
+	"pos-service/middleware"
 )
 
 func SetupRoutes(r *gin.Engine) {
 	api := r.Group("/api")
 	{
-		employees := api.Group("/employees")
+		//Public routes
+		auth := api.Group("/auth")
 		{
-			employees.GET("", controllers.GetAllEmployees)
-			employees.GET("/:id", controllers.GetEmployeeByID)
-			employees.POST("", controllers.CreateEmployee)
-			employees.PUT("/:id", controllers.UpdateEmployee)
-			employees.DELETE("/:id", controllers.DeleteEmployee)
+			auth.POST("/check_user", controllers.CheckUser)
+			auth.POST("/set_pin", controllers.SetupPin)
+			auth.POST("/login", controllers.Login)
 		}
 
-		categories := api.Group("/categories")
+		//Protected routes
+		protected := api.Group("", middleware.AuthMiddleware())
 		{
-			categories.GET("", controllers.GetCategories)
+			employees := protected.Group("/employees", middleware.AuthorizeRole("admin"))
+			{
+				employees.GET("", controllers.GetAllEmployees)
+				employees.GET("/:id", controllers.GetEmployeeByID)
+				employees.POST("", controllers.CreateEmployee)
+				employees.PUT("/:id", controllers.UpdateEmployee)
+				employees.DELETE("/:id", controllers.DeleteEmployee)
+			}
+
+			categories := api.Group("/categories")
+			{
+				categories.GET("", controllers.GetCategories)
+			}
+
 		}
 	}
 }
