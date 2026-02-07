@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"pos-service/config"
@@ -34,7 +35,6 @@ func GetEmployeeByID(c *gin.Context) {
 
 func CreateEmployee(c *gin.Context) {
 	type createEmployeeRequest struct {
-		EmpCode  string `json:"emp_code" binding:"required"`
 		Name     string `json:"name" binding:"required"`
 		Role     string `json:"role" binding:"required"`
 		PhoneNum string `json:"phonenum"`
@@ -48,7 +48,6 @@ func CreateEmployee(c *gin.Context) {
 
 	err := config.Db.Transaction(func(tx *gorm.DB) error {
 		newEmployee := models.Employee{
-			EmpCode:  req.EmpCode,
 			Name:     req.Name,
 			Role:     req.Role,
 			PhoneNum: req.PhoneNum,
@@ -57,10 +56,15 @@ func CreateEmployee(c *gin.Context) {
 		if err := tx.Create(&newEmployee).Error; err != nil {
 			return err
 		}
+		generatedCode := fmt.Sprintf("E%03d", newEmployee.ID)
+
+		if err := tx.Model(&newEmployee).Update("emp_code", generatedCode).Error; err != nil {
+			return err
+		}
 
 		newUser := models.User{
 			EmployeeID: newEmployee.ID,
-			PinHash:    nil, 
+			PinHash:    nil,
 		}
 		if err := tx.Create(&newUser).Error; err != nil {
 			return err
@@ -74,7 +78,7 @@ func CreateEmployee(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusCreated, gin.H{"message": "สร้างพนักงานสำเร็จ รอกำหนด PIN ครั้งแรก"})
+	c.JSON(http.StatusCreated, gin.H{"message": "สร้างพนักงานสำเร็จ"})
 }
 
 func UpdateEmployee(c *gin.Context) {
