@@ -110,10 +110,12 @@ func SetupPin(c *gin.Context) {
 	token, _ := GenerateToken(employee.EmpCode, employee.Role)
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "ตั้งรหัส PIN สำเร็จ",
-		"token":   token,
-		"name":    employee.Name,
-		"role":    employee.Role,
+		"user": gin.H{
+			"emp_code": employee.EmpCode,
+			"name":     employee.Name,
+			"role":     employee.Role,
+		},
+		"token": token,
 	})
 }
 

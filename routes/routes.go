@@ -29,7 +29,7 @@ func SetupRoutes(r *gin.Engine) {
 				employees.DELETE("/:id", controllers.DeleteEmployee)
 			}
 
-			categories := api.Group("/categories")
+			categories := protected.Group("/categories")
 			{
 				categories.GET("", controllers.GetCategories)
 				categories.GET("/:id", controllers.GetCategoryByID)
@@ -38,7 +38,7 @@ func SetupRoutes(r *gin.Engine) {
 				categories.DELETE("/:id", controllers.DeleteCategory)
 			}
 
-			products := api.Group("/products")
+			products := protected.Group("/products")
 			{
 				products.GET("", controllers.GetProducts)
 				products.GET("/:id", controllers.GetProductByID)
@@ -47,7 +47,7 @@ func SetupRoutes(r *gin.Engine) {
 				products.DELETE("/:id", controllers.DeleteProduct)
 			}
 
-			orderTypes := api.Group("/order_types")
+			orderTypes := protected.Group("/order_types")
 			{
 				orderTypes.GET("", controllers.GetOrderTypes)
 				orderTypes.GET("/:id", controllers.GetOrderTypeByID)
@@ -62,7 +62,7 @@ func SetupRoutes(r *gin.Engine) {
 				order.GET("/:id", controllers.GetOrderByID)
 				order.POST("", controllers.CreateOrder)
 				order.PUT("/:id", controllers.UpdateOrder)
-				order.PUT("/:id/status", controllers.UpdateOrderStatus)
+				order.PATCH("/:id/status", controllers.UpdateOrderStatus)
 				order.DELETE("/:id", controllers.DeleteOrder)
 			}
 		}

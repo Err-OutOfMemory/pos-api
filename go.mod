@@ -4,6 +4,8 @@ go 1.25.7
 
 require github.com/joho/godotenv v1.5.1
 
+require github.com/gin-contrib/cors v1.7.6 // indirect
+
 require (
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.15.0 // indirect
