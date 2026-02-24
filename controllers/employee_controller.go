@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"fmt"
+	"math"
 	"net/http"
+	"strconv"
 
 	"pos-service/config"
 	"pos-service/models"
@@ -12,14 +14,38 @@ import (
 )
 
 func GetAllEmployees(c *gin.Context) {
-	var employees []models.Employee
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	search := c.Query("search")
+	offset := (page - 1) * limit
 
-	if err := config.Db.Preload("User").Find(&employees).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	var employees []models.Employee
+	var total int64
+
+	query := config.Db.Model(&models.Employee{})
+
+	if search != "" {
+		searchTerm := "%" + search + "%"
+		query = query.Where("name LIKE ? OR emp_code LIKE ?", searchTerm, searchTerm)
+	}
+
+	query.Count(&total)
+
+	if err := query.Limit(limit).Offset(offset).
+		Order("id asc").
+		Preload("User").
+		Find(&employees).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "ไม่สามารถดึงข้อมูลพนักงานได้"})
 		return
 	}
 
-	c.JSON(http.StatusOK, employees)
+	c.JSON(http.StatusOK, gin.H{
+		"data":       employees,
+		"total":      total,
+		"page":       page,
+		"limit":      limit,
+		"total_page": math.Ceil(float64(total) / float64(limit)),
+	})
 }
 
 func GetEmployeeByID(c *gin.Context) {

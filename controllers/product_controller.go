@@ -1,7 +1,12 @@
 package controllers
 
 import (
+	"math"
 	"net/http"
+	"os"
+	"path/filepath"
+	"strconv"
+	"strings"
 
 	"pos-service/config"
 	"pos-service/models"
@@ -9,14 +14,48 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetProducts(c *gin.Context) {
-	var products []models.Product
+func removeFile(fileURL string) {
+	if fileURL == "" || strings.Contains(fileURL, "placehold.co") {
+		return
+	}
+	fileName := filepath.Base(fileURL)
+	filePath := filepath.Join("./uploads", fileName)
+	os.Remove(filePath)
+}
 
-	if err := config.Db.Preload("Category").Find(&products).Error; err != nil {
+func GetProducts(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	categoryID := c.Query("category_id")
+	search := c.Query("search")
+
+	var products []models.Product
+	var total int64
+
+	query := config.Db.Model(&models.Product{}).Preload("Category")
+
+	if categoryID != "" {
+		query = query.Where("category_id = ?", categoryID)
+	}
+	if search != "" {
+		query = query.Where("product_name LIKE ?", "%"+search+"%")
+	}
+
+	query.Count(&total)
+
+	offset := (page - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Find(&products).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, products)
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":       products,
+		"total":      total,
+		"page":       page,
+		"limit":      limit,
+		"total_page": math.Ceil(float64(total) / float64(limit)),
+	})
 }
 
 func GetProductByID(c *gin.Context) {
@@ -82,6 +121,7 @@ func UpdateProduct(c *gin.Context) {
 		CategoryID  *uint    `json:"category_id"`
 		Price       *float64 `json:"price"`
 		Status      *string  `json:"status"`
+		ImgPath     *string  `json:"img_path"`
 		Description *string  `json:"description"`
 		Type        *string  `json:"type"`
 	}
@@ -102,6 +142,10 @@ func UpdateProduct(c *gin.Context) {
 
 	if req.ProductName != nil {
 		updateData["product_name"] = *req.ProductName
+	}
+	if req.ImgPath != nil && *req.ImgPath != product.ImgPath {
+		removeFile(product.ImgPath)
+		updateData["img_path"] = *req.ImgPath
 	}
 	if req.CategoryID != nil {
 		updateData["category_id"] = *req.CategoryID
@@ -139,7 +183,7 @@ func DeleteProduct(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
 		return
 	}
-
+	removeFile(product.ImgPath)
 	if err := config.Db.Delete(&product).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "ไม่สามารถลบ Product ได้"})
 		return

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"pos-service/config"
 	"pos-service/models"
@@ -10,13 +11,46 @@ import (
 )
 
 func GetCategories(c *gin.Context) {
-	var categories []models.Category
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
+	search := c.Query("search")
+	status := c.Query("status")
 
-	if err := config.Db.Find(&categories).Error; err != nil {
+	var categories []models.Category
+	var total int64
+
+	query := config.Db.Model(&models.Category{})
+
+	if search != "" {
+		query = query.Where("category_name LIKE ?", "%"+search+"%")
+	}
+	if status != "" {
+		switch status {
+		case "active":
+			query = query.Where("status = ?", true)
+		case "inactive":
+			query = query.Where("status = ?", false)
+		default:
+		}
+	}
+
+	if err := query.Count(&total).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, categories)
+
+	offset := (page - 1) * limit
+	if err := query.Offset(offset).Limit(limit).Find(&categories).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"data":       categories,
+		"total":      total,
+		"page":       page,
+		"limit":      limit,
+		"total_page": int64(total)/int64(limit) + 1,
+	})
 }
 
 func GetCategoryByID(c *gin.Context) {

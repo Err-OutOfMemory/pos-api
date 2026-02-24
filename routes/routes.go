@@ -20,6 +20,8 @@ func SetupRoutes(r *gin.Engine) {
 		//Protected routes
 		protected := api.Group("", middleware.AuthMiddleware())
 		{
+			protected.POST("/upload", controllers.UploadFile)
+
 			employees := protected.Group("/employees", middleware.AuthorizeRole("admin"))
 			{
 				employees.GET("", controllers.GetAllEmployees)

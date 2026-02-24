@@ -22,6 +22,7 @@
 # Environment
 # ======================
 .env
+uploads/*
 
 # ======================
 # IDE / Editor
