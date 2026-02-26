@@ -186,3 +186,29 @@ func Login(c *gin.Context) {
 		"token": token,
 	})
 }
+
+func GetProfile(c *gin.Context) {
+	empCode := c.GetString("emp_code")
+
+	if empCode == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+		return
+	}
+
+	var employee models.Employee
+
+	err := config.Db.
+		Where("emp_code = ? AND status = ?", empCode, "active").
+		First(&employee).Error
+
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"emp_code": employee.EmpCode,
+		"name":     employee.Name,
+		"role":     employee.Role,
+	})
+}

@@ -29,7 +29,7 @@ func UploadFile(c *gin.Context) {
 		return
 	}
 
-	fileURL := fmt.Sprintf("http://localhost:8080/uploads/%s", newFileName)
+	fileURL := fmt.Sprintf("/uploads/%s", newFileName)
 
 	c.JSON(http.StatusOK, gin.H{
 		"url": fileURL,

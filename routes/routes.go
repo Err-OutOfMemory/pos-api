@@ -15,6 +15,7 @@ func SetupRoutes(r *gin.Engine) {
 			auth.POST("/check_user", controllers.CheckUser)
 			auth.POST("/set_pin", controllers.SetupPin)
 			auth.POST("/login", controllers.Login)
+			auth.GET("/profile", middleware.AuthMiddleware(), controllers.GetProfile)
 		}
 
 		//Protected routes
