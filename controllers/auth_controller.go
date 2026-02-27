@@ -179,9 +179,10 @@ func Login(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"user": gin.H{
-			"emp_code": employee.EmpCode,
-			"name":     employee.Name,
-			"role":     employee.Role,
+			"employee_id": employee.ID,
+			"emp_code":    employee.EmpCode,
+			"name":        employee.Name,
+			"role":        employee.Role,
 		},
 		"token": token,
 	})
@@ -207,6 +208,7 @@ func GetProfile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
+		"employee_id": employee.ID,
 		"emp_code": employee.EmpCode,
 		"name":     employee.Name,
 		"role":     employee.Role,
