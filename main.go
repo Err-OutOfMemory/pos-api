@@ -1,47 +1,53 @@
 package main
 
 import (
-	"os"
-	"pos-service/config"
-	"pos-service/models"
-	"pos-service/routes"
-	"time"
+    "os"
+    "pos-service/config"
+    "pos-service/models"
+    "pos-service/routes"
+    "strings"
+    "time"
 
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+    "github.com/gin-contrib/cors"
+    "github.com/gin-gonic/gin"
 )
 
 func main() {
-	config.ConnectDatabase()
+    config.ConnectDatabase()
 
-	config.Db.AutoMigrate(
-		&models.Employee{},
-		&models.User{},
-		&models.Category{},
-		&models.OrderType{},
-		&models.Product{},
-		&models.Order{},
-		&models.OrderDetail{},
-	)
+    config.Db.AutoMigrate(
+        &models.Employee{},
+        &models.User{},
+        &models.Category{},
+        &models.OrderType{},
+        &models.Product{},
+        &models.Order{},
+        &models.OrderDetail{},
+    )
 
-	if _, err := os.Stat("uploads"); os.IsNotExist(err) {
-		os.Mkdir("uploads", 0755)
-	}
+    if _, err := os.Stat("uploads"); os.IsNotExist(err) {
+        os.Mkdir("uploads", 0755)
+    }
 
-	r := gin.Default()
+    r := gin.Default()
 
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{os.Getenv("APP_ADDRESS")},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
+    r.SetTrustedProxies([]string{"172.16.0.0/12", "192.168.0.0/16"})
 
-	r.Static("/uploads", "./uploads")
+    r.Use(cors.New(cors.Config{
+        AllowOriginFunc: func(origin string) bool {
+            return strings.HasPrefix(origin, "http://192.168.") ||
+                strings.HasPrefix(origin, "http://localhost") ||
+                strings.HasPrefix(origin, "http://127.0.0.1")
+        },
+        AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+        AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+        AllowCredentials: true,
+        MaxAge:           12 * time.Hour,
+    }))
 
-	routes.SetupRoutes(r)
+    r.Static("/uploads", "./uploads")
 
-	r.Run("localhost:" + os.Getenv("PORT"))
+    routes.SetupRoutes(r)
+
+    r.Run(":" + os.Getenv("PORT"))
 }
